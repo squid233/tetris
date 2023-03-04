@@ -1,0 +1,83 @@
+plugins {
+    id "java"
+    id "idea"
+}
+
+import org.gradle.internal.os.OperatingSystem
+
+group = "io.github.squid233"
+version = "0.1.0-SNAPSHOT"
+
+switch (OperatingSystem.current()) {
+    case OperatingSystem.LINUX:
+        def osArch = System.getProperty("os.arch")
+        project.ext.overrunglNatives = osArch.startsWith("arm") || osArch.startsWith("aarch64")
+            ? "natives-linux-${osArch.contains("64") || osArch.startsWith("armv8") ? "arm64" : "arm32"}"
+            : "natives-linux"
+        break
+    case OperatingSystem.MAC_OS:
+        project.ext.overrunglNatives = System.getProperty("os.arch").startsWith("aarch64") ? "natives-macos-arm64" : "natives-macos"
+        break
+    case OperatingSystem.WINDOWS:
+        def osArch = System.getProperty("os.arch")
+        project.ext.overrunglNatives = osArch.contains("64")
+            ? "natives-windows${osArch.startsWith("aarch64") ? "-arm64" : ""}"
+            : "natives-windows-x86"
+        break
+}
+
+repositories {
+    mavenCentral()
+    maven { url 'https://maven.aliyun.com/repository/central' }
+    // temporary maven repositories
+    maven { url 'https://s01.oss.sonatype.org/content/repositories/releases' }
+    maven { url 'https://s01.oss.sonatype.org/content/repositories/snapshots' }
+}
+
+dependencies {
+    implementation platform("io.github.over-run:overrungl-bom:0.1.0-SNAPSHOT")
+    implementation "io.github.over-run:overrungl"
+    implementation "io.github.over-run:overrungl-glfw"
+    implementation "io.github.over-run:overrungl-joml"
+    implementation "io.github.over-run:overrungl-opengl"
+    implementation "io.github.over-run:overrungl-stb"
+    runtimeOnly "io.github.over-run:overrungl-glfw::$overrunglNatives"
+    runtimeOnly "io.github.over-run:overrungl-stb::$overrunglNatives"
+    implementation "io.github.over-run:timer:0.2.0"
+    implementation "io.github.over-run:unifont:15.0.01.1"
+    implementation "org.joml:joml:1.10.5"
+    compileOnly "org.jetbrains:annotations:24.0.1"
+}
+
+def targetJavaVersion = 20
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.compilerArgs += '--enable-preview'
+    if (targetJavaVersion >= 10 || JavaVersion.current().isJava10Compatible()) {
+        options.release.set(targetJavaVersion)
+    }
+}
+
+java {
+    def javaVersion = JavaVersion.toVersion(targetJavaVersion)
+    if (JavaVersion.current() < javaVersion) {
+        toolchain.languageVersion.set(JavaLanguageVersion.of(targetJavaVersion))
+    }
+    archivesBaseName = "tetris"
+}
+
+jar {
+    manifestContentCharset 'utf-8'
+    metadataCharset 'utf-8'
+    from 'LICENSE'
+    manifest.attributes(
+        'Specification-Title': "tetris",
+        'Specification-Vendor': 'squid233',
+        'Specification-Version': '0',
+        'Implementation-Title': "tetris",
+        'Implementation-Vendor': 'squid233',
+        'Implementation-Version': archiveVersion
+    )
+}
+
+idea.module.inheritOutputDirs = true

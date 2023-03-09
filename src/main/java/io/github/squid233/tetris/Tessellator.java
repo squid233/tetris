@@ -63,7 +63,7 @@ public final class Tessellator implements Disposable {
 
         GL.bindBuffer(GL.ARRAY_BUFFER, vbo);
         if (noVbo || bufferGrew) {
-            GL.bufferData(GL.ARRAY_BUFFER, buffer, GL.STREAM_DRAW);
+            GL.bufferData(GL.ARRAY_BUFFER, buffer.capacity(), buffer.address(), GL.STREAM_DRAW);
         } else {
             GL.bufferSubData(GL.ARRAY_BUFFER, 0, buffer);
         }
@@ -79,7 +79,7 @@ public final class Tessellator implements Disposable {
 
         if (noEbo) GL.bindBuffer(GL.ELEMENT_ARRAY_BUFFER, ebo);
         if (noEbo || indexBufferGrew) {
-            GL.bufferData(GL.ELEMENT_ARRAY_BUFFER, indexBuffer, GL.STREAM_DRAW);
+            GL.bufferData(GL.ELEMENT_ARRAY_BUFFER, indexBuffer.capacity(), indexBuffer.address(), GL.STREAM_DRAW);
         } else {
             GL.bufferSubData(GL.ELEMENT_ARRAY_BUFFER, 0, indexBuffer);
         }
@@ -114,8 +114,7 @@ public final class Tessellator implements Disposable {
     }
 
     public void emit() {
-        buffer.putAll(JAVA_FLOAT_UNALIGNED, x, y)
-            .putAll(JAVA_FLOAT_UNALIGNED, u, v)
+        buffer.putAll(JAVA_FLOAT_UNALIGNED, x, y, u, v)
             .putAll(JAVA_BYTE, (byte) (colorRGB >>> 16), (byte) (colorRGB >>> 8), (byte) colorRGB);
         vertexCount++;
     }

@@ -10,9 +10,9 @@ public enum CellType {
     GREEN(0x00ff00),
     BLUE(0x0094ff),
     CYAN(0x00ffff),
-    PURPLE(0x8000ff),
+    MAGENTA(0xff00dc),
     YELLOW(0xffff00),
-    WHITE(0xffffff);
+    ORANGE(0xff6a00);
 
     private final int colorRGB;
 
